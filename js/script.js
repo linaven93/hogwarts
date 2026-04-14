@@ -37,7 +37,20 @@ function renderStudents(students) {
       <p>Age: ${age}</p>
       <p>Wand: ${wand}</p>
       <p>House: ${student.house || "Unknown"}</p>
+      <button class="save-btn">Save</button>
+      <button class="delete-btn">Delete</button>
     `;
+
+    const saveBtn = card.querySelector(".save-btn");
+    const deleteBtn = card.querySelector(".delete-btn");
+
+    saveBtn.addEventListener("click", () => {
+      console.log("Saved:", student.name);
+    });
+
+    deleteBtn.addEventListener("click", () => {
+      card.remove();
+    });
 
     studentList.append(card);
   });
