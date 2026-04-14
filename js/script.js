@@ -1,12 +1,18 @@
-console.log("App started");
+const studentList = document.querySelector("#student-list");
 
 fetch("https://hp-api.onrender.com/api/characters/students")
   .then((res) => res.json())
   .then((data) => {
-    console.log(data);
-
-    data.forEach((student) => {
-      console.log(student.name);
-    });
+    renderStudents(data);
   })
   .catch((err) => console.error(err));
+
+function renderStudents(students) {
+  studentList.innerHTML = "";
+
+  students.forEach((student) => {
+    const p = document.createElement("p");
+    p.textContent = student.name;
+    studentList.append(p);
+  });
+}
