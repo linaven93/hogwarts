@@ -1,17 +1,38 @@
 const studentList = document.querySelector("#student-list");
+const searchInput = document.getElementById("search");
 const defaultImage = "https://placehold.co/200x250?text=No+Image";
+
+let students = [];
 
 fetch("https://hp-api.onrender.com/api/characters/students")
   .then((res) => res.json())
   .then((data) => {
-    renderStudents(data);
+    students = data;
+    renderStudents(students);
   })
   .catch((err) => console.error(err));
 
-function renderStudents(students) {
+searchInput.addEventListener("input", function () {
+  const value = searchInput.value.toLowerCase();
+
+  const filtered = students.filter(
+    (student) =>
+      student.name.toLowerCase().includes(value) ||
+      student.house.toLowerCase().includes(value),
+  );
+
+  renderStudents(filtered);
+});
+
+function renderStudents(list) {
   studentList.innerHTML = "";
 
-  students.forEach((student) => {
+  if (list.length === 0) {
+    studentList.innerHTML = "<p>No students found</p>";
+    return;
+  }
+
+  list.forEach((student) => {
     const card = document.createElement("div");
     card.classList.add("student-card");
 
