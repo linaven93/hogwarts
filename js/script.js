@@ -70,7 +70,8 @@ function renderStudents(list) {
     });
 
     deleteBtn.addEventListener("click", () => {
-      card.remove();
+      students = students.filter((item) => item.name !== student.name);
+      renderStudents(students);
     });
 
     studentList.append(card);
