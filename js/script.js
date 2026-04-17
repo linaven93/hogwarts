@@ -37,6 +37,18 @@ function renderStudents(list) {
     const card = document.createElement("div");
     card.classList.add("student-card");
 
+    if (student.house === "Gryffindor") {
+      card.style.backgroundColor = "#ba0d18";
+    } else if (student.house === "Slytherin") {
+      card.style.backgroundColor = "#194b35";
+    } else if (student.house === "Ravenclaw") {
+      card.style.backgroundColor = "#28528c";
+    } else if (student.house === "Hufflepuff") {
+      card.style.backgroundColor = "#f5b940";
+    } else {
+      card.style.backgroundColor = "#d2caca";
+    }
+
     const image = student.image ? student.image : defaultImage;
 
     const altNames =
