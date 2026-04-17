@@ -3,6 +3,7 @@ const searchInput = document.getElementById("search");
 const defaultImage = "https://placehold.co/200x250?text=No+Image";
 
 let students = [];
+let savedStudents = JSON.parse(localStorage.getItem("savedStudents")) || [];
 
 fetch("https://hp-api.onrender.com/api/characters/students")
   .then((res) => res.json())
@@ -65,12 +66,34 @@ function renderStudents(list) {
     const saveBtn = card.querySelector(".save-btn");
     const deleteBtn = card.querySelector(".delete-btn");
 
+    const isSaved = savedStudents.some((item) => item.name === student.name);
+    if (isSaved) {
+      saveBtn.textContent = "Saved";
+    }
+
     saveBtn.addEventListener("click", () => {
-      console.log("Saved:", student.name);
+      const isSaved = savedStudents.some((item) => item.name === student.name);
+
+      if (isSaved) {
+        savedStudents = savedStudents.filter(
+          (item) => item.name !== student.name,
+        );
+        saveBtn.textContent = "Save";
+        saveBtn.disabled = false;
+      } else {
+        savedStudents.push(student);
+        saveBtn.textContent = "Saved";
+      }
+
+      localStorage.setItem("savedStudents", JSON.stringify(savedStudents));
     });
 
     deleteBtn.addEventListener("click", () => {
       students = students.filter((item) => item.name !== student.name);
+      savedStudents = savedStudents.filter(
+        (item) => item.name !== student.name,
+      );
+      localStorage.setItem("savedStudents", JSON.stringify(savedStudents));
       renderStudents(students);
     });
 
