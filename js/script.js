@@ -1,6 +1,8 @@
 const studentList = document.querySelector("#student-list");
-const searchInput = document.getElementById("search");
+const searchInput = document.querySelector("#search");
 const savedList = document.querySelector("#saved-list");
+const saveMessage = document.querySelector("#save-message");
+
 const defaultImage = "https://placehold.co/200x250?text=No+Image";
 
 let students = [];
@@ -13,19 +15,34 @@ fetch("https://hp-api.onrender.com/api/characters/students")
     renderStudents(students);
     renderSavedStudents();
   })
-  .catch((err) => console.error(err));
+  .catch((err) => console.error("Error fetching students:", err));
 
-searchInput.addEventListener("input", function () {
+searchInput.addEventListener("input", () => {
   const value = searchInput.value.toLowerCase();
 
-  const filtered = students.filter(
-    (student) =>
+  const filtered = students.filter((student) => {
+    return (
       student.name.toLowerCase().includes(value) ||
-      student.house.toLowerCase().includes(value),
-  );
+      student.house.toLowerCase().includes(value)
+    );
+  });
 
   renderStudents(filtered);
 });
+
+function getHouseColor(house) {
+  if (house === "Gryffindor") {
+    return "#ba0d18";
+  } else if (house === "Slytherin") {
+    return "#194b35";
+  } else if (house === "Ravenclaw") {
+    return "#28528c";
+  } else if (house === "Hufflepuff") {
+    return "#f5b940";
+  } else {
+    return "#d2caca";
+  }
+}
 
 function renderStudents(list) {
   studentList.innerHTML = "";
@@ -38,23 +55,12 @@ function renderStudents(list) {
   list.forEach((student) => {
     const card = document.createElement("div");
     card.classList.add("student-card");
-
-    if (student.house === "Gryffindor") {
-      card.style.backgroundColor = "#ba0d18";
-    } else if (student.house === "Slytherin") {
-      card.style.backgroundColor = "#194b35";
-    } else if (student.house === "Ravenclaw") {
-      card.style.backgroundColor = "#28528c";
-    } else if (student.house === "Hufflepuff") {
-      card.style.backgroundColor = "#f5b940";
-    } else {
-      card.style.backgroundColor = "#d2caca";
-    }
+    card.style.backgroundColor = getHouseColor(student.house);
 
     const image = student.image ? student.image : defaultImage;
 
     const altNames =
-      student.alternate_names.length > 0
+      student.alternate_names && student.alternate_names.length > 0
         ? student.alternate_names.join(", ")
         : "None";
 
@@ -81,21 +87,31 @@ function renderStudents(list) {
     const deleteBtn = card.querySelector(".delete-btn");
 
     const isSaved = savedStudents.some((item) => item.name === student.name);
+
     if (isSaved) {
       saveBtn.textContent = "Saved";
     }
 
     saveBtn.addEventListener("click", () => {
-      const isSaved = savedStudents.some((item) => item.name === student.name);
+      const alreadySaved = savedStudents.some(
+        (item) => item.name === student.name,
+      );
 
-      if (isSaved) {
+      if (alreadySaved) {
         savedStudents = savedStudents.filter(
           (item) => item.name !== student.name,
         );
         saveBtn.textContent = "Save";
+        saveMessage.textContent = "";
       } else {
+        if (savedStudents.length >= 3) {
+          saveMessage.textContent = "You can only save up to 3 students.";
+          return;
+        }
+
         savedStudents.push(student);
         saveBtn.textContent = "Saved";
+        saveMessage.textContent = "";
       }
 
       localStorage.setItem("savedStudents", JSON.stringify(savedStudents));
@@ -129,13 +145,14 @@ function renderSavedStudents() {
   savedStudents.forEach((student) => {
     const card = document.createElement("div");
     card.classList.add("student-card");
+    card.style.backgroundColor = getHouseColor(student.house);
 
     const image = student.image ? student.image : defaultImage;
 
     card.innerHTML = `
       <img src="${image}" alt="${student.name}">
       <h3>${student.name}</h3>
-      <p>${student.house || "Unknown"}</p>
+      <p>House: ${student.house || "Unknown"}</p>
       <button class="remove-btn">Remove</button>
     `;
 
@@ -148,6 +165,7 @@ function renderSavedStudents() {
 
       localStorage.setItem("savedStudents", JSON.stringify(savedStudents));
 
+      saveMessage.textContent = "";
       renderSavedStudents();
       renderStudents(students);
     });
@@ -163,6 +181,5 @@ function filterByHouse(house) {
   }
 
   const filtered = students.filter((student) => student.house === house);
-
   renderStudents(filtered);
 }
