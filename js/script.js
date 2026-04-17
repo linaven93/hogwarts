@@ -1,5 +1,6 @@
 const studentList = document.querySelector("#student-list");
 const searchInput = document.getElementById("search");
+const savedList = document.querySelector("#saved-list");
 const defaultImage = "https://placehold.co/200x250?text=No+Image";
 
 let students = [];
@@ -10,6 +11,7 @@ fetch("https://hp-api.onrender.com/api/characters/students")
   .then((data) => {
     students = data;
     renderStudents(students);
+    renderSavedStudents();
   })
   .catch((err) => console.error(err));
 
@@ -91,13 +93,13 @@ function renderStudents(list) {
           (item) => item.name !== student.name,
         );
         saveBtn.textContent = "Save";
-        saveBtn.disabled = false;
       } else {
         savedStudents.push(student);
         saveBtn.textContent = "Saved";
       }
 
       localStorage.setItem("savedStudents", JSON.stringify(savedStudents));
+      renderSavedStudents();
     });
 
     deleteBtn.addEventListener("click", () => {
@@ -105,13 +107,55 @@ function renderStudents(list) {
       savedStudents = savedStudents.filter(
         (item) => item.name !== student.name,
       );
+
       localStorage.setItem("savedStudents", JSON.stringify(savedStudents));
+
       renderStudents(students);
+      renderSavedStudents();
     });
 
     studentList.append(card);
   });
 }
+
+function renderSavedStudents() {
+  savedList.innerHTML = "";
+
+  if (savedStudents.length === 0) {
+    savedList.innerHTML = "<p>No saved students yet</p>";
+    return;
+  }
+
+  savedStudents.forEach((student) => {
+    const card = document.createElement("div");
+    card.classList.add("student-card");
+
+    const image = student.image ? student.image : defaultImage;
+
+    card.innerHTML = `
+      <img src="${image}" alt="${student.name}">
+      <h3>${student.name}</h3>
+      <p>${student.house || "Unknown"}</p>
+      <button class="remove-btn">Remove</button>
+    `;
+
+    const removeBtn = card.querySelector(".remove-btn");
+
+    removeBtn.addEventListener("click", () => {
+      savedStudents = savedStudents.filter(
+        (item) => item.name !== student.name,
+      );
+
+      localStorage.setItem("savedStudents", JSON.stringify(savedStudents));
+
+      renderSavedStudents();
+      renderStudents(students);
+    });
+
+    savedList.append(card);
+  });
+}
+
 function filterByHouse(house) {
   if (house === "all") {
     renderStudents(students);
