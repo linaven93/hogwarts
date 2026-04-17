@@ -100,3 +100,13 @@ function renderStudents(list) {
     studentList.append(card);
   });
 }
+function filterByHouse(house) {
+  if (house === "all") {
+    renderStudents(students);
+    return;
+  }
+
+  const filtered = students.filter((student) => student.house === house);
+
+  renderStudents(filtered);
+}

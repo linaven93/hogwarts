@@ -10,6 +10,13 @@
     <main>
       <h1>Hogwarts</h1>
       <input type="text" id="search" placeholder="Search student..." />
+      <div>
+        <button onclick="filterByHouse('Gryffindor')">Gryffindor</button>
+        <button onclick="filterByHouse('Slytherin')">Slytherin</button>
+        <button onclick="filterByHouse('Hufflepuff')">Hufflepuff</button>
+        <button onclick="filterByHouse('Ravenclaw')">Ravenclaw</button>
+        <button onclick="filterByHouse('all')">All</button>
+      </div>
       <p id="no-results" style="display: none">No students found</p>
       <div id="student-list"></div>
     </main>
