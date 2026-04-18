@@ -48,3 +48,24 @@ h2 {
   padding: 15px;
   border-radius: 10px;
 }
+#add-student-form {
+  display: grid;
+  gap: 10px;
+  margin-top: 15px;
+  margin-bottom: 30px;
+  max-width: 400px;
+}
+
+#add-student-form input,
+#add-student-form button {
+  padding: 10px;
+  border-radius: 6px;
+  border: none;
+  font-size: 16px;
+}
+
+#add-student-form button {
+  background-color: #f5b940;
+  cursor: pointer;
+  font-weight: bold;
+}

@@ -2,6 +2,11 @@ const studentList = document.querySelector("#student-list");
 const searchInput = document.querySelector("#search");
 const savedList = document.querySelector("#saved-list");
 const saveMessage = document.querySelector("#save-message");
+const addStudentForm = document.querySelector("#add-student-form");
+const nameInput = document.querySelector("#name");
+const houseInput = document.querySelector("#house");
+const yearInput = document.querySelector("#yearOfBirth");
+const imageInput = document.querySelector("#image");
 
 const defaultImage = "https://placehold.co/200x250?text=No+Image";
 
@@ -183,3 +188,24 @@ function filterByHouse(house) {
   const filtered = students.filter((student) => student.house === house);
   renderStudents(filtered);
 }
+addStudentForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+
+  const newStudent = {
+    name: nameInput.value,
+    house: houseInput.value,
+    yearOfBirth: yearInput.value ? Number(yearInput.value) : null,
+    image: imageInput.value,
+    alternate_names: [],
+    wand: {
+      wood: "",
+      core: "",
+      length: "",
+    },
+  };
+
+  students.unshift(newStudent);
+  renderStudents(students);
+
+  addStudentForm.reset();
+});
