@@ -95,18 +95,20 @@ function renderStudents(list) {
     const age = student.yearOfBirth ? 2026 - student.yearOfBirth : "Unknown";
 
     card.innerHTML = `
-      <img src="${image}" alt="${student.name}">
-      <h2>${student.name}</h2>
-      <p>Alternative names: ${altNames}</p>
-      <p>Age: ${age}</p>
-      <p>Wand: ${wand}</p>
-      <p>House: ${student.house || "Unknown"}</p>
-      <button class="save-btn">Save</button>
-      <button class="delete-btn">Delete</button>
-    `;
+  <img src="${image}" alt="${student.name}">
+  <h2>${student.name}</h2>
+  <p>Alternative names: ${altNames}</p>
+  <p>Age: ${age}</p>
+  <p>Wand: ${wand}</p>
+  <p>House: ${student.house || "Unknown"}</p>
+  <button class="save-btn">Save</button>
+  <button class="edit-btn">Edit</button>
+  <button class="delete-btn">Delete</button>
+`;
 
     const saveBtn = card.querySelector(".save-btn");
     const deleteBtn = card.querySelector(".delete-btn");
+    const editBtn = card.querySelector(".edit-btn");
 
     const isSaved = savedStudents.some((item) => item.name === student.name);
 
@@ -137,6 +139,37 @@ function renderStudents(list) {
       }
 
       localStorage.setItem("savedStudents", JSON.stringify(savedStudents));
+      renderSavedStudents();
+    });
+
+    editBtn.addEventListener("click", () => {
+      const oldName = student.name;
+
+      const newName = prompt("Enter new name:", student.name);
+      const newHouse = prompt("Enter new house:", student.house);
+      const newYear = prompt(
+        "Enter new year of birth:",
+        student.yearOfBirth || "",
+      );
+
+      if (newName === null || newHouse === null || newYear === null) {
+        return;
+      }
+
+      student.name = newName.trim() || student.name;
+      student.house = newHouse.trim() || student.house;
+      student.yearOfBirth = newYear ? Number(newYear) : null;
+
+      savedStudents = savedStudents.map((item) => {
+        if (item.name === oldName) {
+          return { ...item, ...student };
+        }
+        return item;
+      });
+
+      localStorage.setItem("savedStudents", JSON.stringify(savedStudents));
+
+      renderStudents(students);
       renderSavedStudents();
     });
 
