@@ -49,6 +49,23 @@ function getHouseColor(house) {
   }
 }
 
+function sortByAge(order) {
+  const sortedStudents = [...students];
+
+  sortedStudents.sort((a, b) => {
+    const ageA = a.yearOfBirth ? 2026 - a.yearOfBirth : 0;
+    const ageB = b.yearOfBirth ? 2026 - b.yearOfBirth : 0;
+
+    if (order === "youngest") {
+      return ageA - ageB;
+    } else {
+      return ageB - ageA;
+    }
+  });
+
+  renderStudents(sortedStudents);
+}
+
 function renderStudents(list) {
   studentList.innerHTML = "";
 
