@@ -7,28 +7,41 @@ const nameInput = document.querySelector("#name");
 const houseInput = document.querySelector("#house");
 const yearInput = document.querySelector("#yearOfBirth");
 const imageInput = document.querySelector("#image");
+const wandWoodInput = document.querySelector("#wandWood");
+const wandCoreInput = document.querySelector("#wandCore");
+const wandLengthInput = document.querySelector("#wandLength");
 
 const defaultImage = "https://placehold.co/200x250?text=No+Image";
 
 let students = [];
 let savedStudents = JSON.parse(localStorage.getItem("savedStudents")) || [];
+let customStudents = JSON.parse(localStorage.getItem("customStudents")) || [];
 
 fetch("https://hp-api.onrender.com/api/characters/students")
-  .then((res) => res.json())
+  .then((res) => {
+    if (!res.ok) {
+      throw new Error("Failed to fetch students");
+    }
+    return res.json();
+  })
   .then((data) => {
-    students = data;
+    students = [...customStudents, ...data];
     renderStudents(students);
     renderSavedStudents();
   })
-  .catch((err) => console.error("Error fetching students:", err));
+  .catch((err) => {
+    console.error("Error fetching students:", err);
+    studentList.innerHTML =
+      "<p>Error loading students. Please try again later.</p>";
+  });
 
 searchInput.addEventListener("input", () => {
   const value = searchInput.value.toLowerCase();
 
   const filtered = students.filter((student) => {
     return (
-      student.name.toLowerCase().includes(value) ||
-      student.house.toLowerCase().includes(value)
+      (student.name || "").toLowerCase().includes(value) ||
+      (student.house || "").toLowerCase().includes(value)
     );
   });
 
@@ -95,16 +108,16 @@ function renderStudents(list) {
     const age = student.yearOfBirth ? 2026 - student.yearOfBirth : "Unknown";
 
     card.innerHTML = `
-  <img src="${image}" alt="${student.name}">
-  <h2>${student.name}</h2>
-  <p>Alternative names: ${altNames}</p>
-  <p>Age: ${age}</p>
-  <p>Wand: ${wand}</p>
-  <p>House: ${student.house || "Unknown"}</p>
-  <button class="save-btn">Save</button>
-  <button class="edit-btn">Edit</button>
-  <button class="delete-btn">Delete</button>
-`;
+      <img src="${image}" alt="${student.name}">
+      <h2>${student.name}</h2>
+      <p>Alternative names: ${altNames}</p>
+      <p>Age: ${age}</p>
+      <p>Wand: ${wand}</p>
+      <p>House: ${student.house || "Unknown"}</p>
+      <button class="save-btn">Save</button>
+      <button class="edit-btn">Edit</button>
+      <button class="delete-btn">Delete</button>
+    `;
 
     const saveBtn = card.querySelector(".save-btn");
     const deleteBtn = card.querySelector(".delete-btn");
@@ -146,7 +159,7 @@ function renderStudents(list) {
       const oldName = student.name;
 
       const newName = prompt("Enter new name:", student.name);
-      const newHouse = prompt("Enter new house:", student.house);
+      const newHouse = prompt("Enter new house:", student.house || "");
       const newYear = prompt(
         "Enter new year of birth:",
         student.yearOfBirth || "",
@@ -167,7 +180,15 @@ function renderStudents(list) {
         return item;
       });
 
+      customStudents = customStudents.map((item) => {
+        if (item.name === oldName) {
+          return { ...item, ...student };
+        }
+        return item;
+      });
+
       localStorage.setItem("savedStudents", JSON.stringify(savedStudents));
+      localStorage.setItem("customStudents", JSON.stringify(customStudents));
 
       renderStudents(students);
       renderSavedStudents();
@@ -178,8 +199,12 @@ function renderStudents(list) {
       savedStudents = savedStudents.filter(
         (item) => item.name !== student.name,
       );
+      customStudents = customStudents.filter(
+        (item) => item.name !== student.name,
+      );
 
       localStorage.setItem("savedStudents", JSON.stringify(savedStudents));
+      localStorage.setItem("customStudents", JSON.stringify(customStudents));
 
       renderStudents(students);
       renderSavedStudents();
@@ -238,24 +263,34 @@ function filterByHouse(house) {
   const filtered = students.filter((student) => student.house === house);
   renderStudents(filtered);
 }
+
 addStudentForm.addEventListener("submit", (e) => {
   e.preventDefault();
 
   const newStudent = {
-    name: nameInput.value,
-    house: houseInput.value,
+    name: nameInput.value.trim(),
+    house: houseInput.value.trim(),
     yearOfBirth: yearInput.value ? Number(yearInput.value) : null,
-    image: imageInput.value,
+    image: imageInput.value.trim() || defaultImage,
     alternate_names: [],
     wand: {
-      wood: "",
-      core: "",
-      length: "",
+      wood: wandWoodInput.value.trim(),
+      core: wandCoreInput.value.trim(),
+      length: wandLengthInput.value ? Number(wandLengthInput.value) : "",
     },
   };
 
+  if (!newStudent.name || !newStudent.house) {
+    saveMessage.textContent = "Name and house are required.";
+    return;
+  }
+
   students.unshift(newStudent);
+  customStudents.push(newStudent);
+
+  localStorage.setItem("customStudents", JSON.stringify(customStudents));
   renderStudents(students);
 
+  saveMessage.textContent = "";
   addStudentForm.reset();
 });
