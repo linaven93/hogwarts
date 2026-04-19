@@ -16,6 +16,8 @@ const defaultImage = "https://placehold.co/200x250?text=No+Image";
 let students = [];
 let savedStudents = JSON.parse(localStorage.getItem("savedStudents")) || [];
 let customStudents = JSON.parse(localStorage.getItem("customStudents")) || [];
+let currentFilter = "all";
+let currentSort = null;
 
 fetch("https://hp-api.onrender.com/api/characters/students")
   .then((res) => {
@@ -36,16 +38,7 @@ fetch("https://hp-api.onrender.com/api/characters/students")
   });
 
 searchInput.addEventListener("input", () => {
-  const value = searchInput.value.toLowerCase();
-
-  const filtered = students.filter((student) => {
-    return (
-      (student.name || "").toLowerCase().includes(value) ||
-      (student.house || "").toLowerCase().includes(value)
-    );
-  });
-
-  renderStudents(filtered);
+  applyFiltersAndSort();
 });
 
 function getHouseColor(house) {
@@ -63,20 +56,41 @@ function getHouseColor(house) {
 }
 
 function sortByAge(order) {
-  const sortedStudents = [...students];
+  currentSort = order;
+  applyFiltersAndSort();
+}
 
-  sortedStudents.sort((a, b) => {
-    const ageA = a.yearOfBirth ? 2026 - a.yearOfBirth : 0;
-    const ageB = b.yearOfBirth ? 2026 - b.yearOfBirth : 0;
+function applyFiltersAndSort() {
+  let result = [...students];
+  const searchValue = searchInput.value.toLowerCase();
 
-    if (order === "youngest") {
-      return ageA - ageB;
-    } else {
-      return ageB - ageA;
-    }
-  });
+  if (currentFilter !== "all") {
+    result = result.filter((student) => student.house === currentFilter);
+  }
 
-  renderStudents(sortedStudents);
+  if (searchValue) {
+    result = result.filter((student) => {
+      return (
+        (student.name || "").toLowerCase().includes(searchValue) ||
+        (student.house || "").toLowerCase().includes(searchValue)
+      );
+    });
+  }
+
+  if (currentSort) {
+    result.sort((a, b) => {
+      const ageA = a.yearOfBirth ? 2026 - a.yearOfBirth : 0;
+      const ageB = b.yearOfBirth ? 2026 - b.yearOfBirth : 0;
+
+      if (currentSort === "youngest") {
+        return ageA - ageB;
+      } else {
+        return ageB - ageA;
+      }
+    });
+  }
+
+  renderStudents(result);
 }
 
 function renderStudents(list) {
@@ -190,7 +204,7 @@ function renderStudents(list) {
       localStorage.setItem("savedStudents", JSON.stringify(savedStudents));
       localStorage.setItem("customStudents", JSON.stringify(customStudents));
 
-      renderStudents(students);
+      applyFiltersAndSort();
       renderSavedStudents();
     });
 
@@ -206,7 +220,7 @@ function renderStudents(list) {
       localStorage.setItem("savedStudents", JSON.stringify(savedStudents));
       localStorage.setItem("customStudents", JSON.stringify(customStudents));
 
-      renderStudents(students);
+      applyFiltersAndSort();
       renderSavedStudents();
     });
 
@@ -247,7 +261,7 @@ function renderSavedStudents() {
 
       saveMessage.textContent = "";
       renderSavedStudents();
-      renderStudents(students);
+      applyFiltersAndSort();
     });
 
     savedList.append(card);
@@ -255,13 +269,8 @@ function renderSavedStudents() {
 }
 
 function filterByHouse(house) {
-  if (house === "all") {
-    renderStudents(students);
-    return;
-  }
-
-  const filtered = students.filter((student) => student.house === house);
-  renderStudents(filtered);
+  currentFilter = house;
+  applyFiltersAndSort();
 }
 
 addStudentForm.addEventListener("submit", (e) => {
@@ -289,7 +298,7 @@ addStudentForm.addEventListener("submit", (e) => {
   customStudents.push(newStudent);
 
   localStorage.setItem("customStudents", JSON.stringify(customStudents));
-  renderStudents(students);
+  applyFiltersAndSort();
 
   saveMessage.textContent = "";
   addStudentForm.reset();
