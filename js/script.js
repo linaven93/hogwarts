@@ -6,7 +6,6 @@ const addStudentForm = document.querySelector("#add-student-form");
 const nameInput = document.querySelector("#name");
 const houseInput = document.querySelector("#house");
 const yearInput = document.querySelector("#yearOfBirth");
-const imageInput = document.querySelector("#image");
 const wandWoodInput = document.querySelector("#wandWood");
 const wandCoreInput = document.querySelector("#wandCore");
 const wandLengthInput = document.querySelector("#wandLength");
@@ -183,9 +182,23 @@ function renderStudents(list) {
         return;
       }
 
-      student.name = newName.trim() || student.name;
-      student.house = newHouse.trim() || student.house;
-      student.yearOfBirth = newYear ? Number(newYear) : null;
+      const trimmedName = newName.trim();
+      const trimmedHouse = newHouse.trim();
+      const yearNumber = Number(newYear);
+
+      if (!trimmedName || !trimmedHouse || !newYear.trim()) {
+        saveMessage.textContent = "Name, house and year of birth are required.";
+        return;
+      }
+
+      if (isNaN(yearNumber) || yearNumber < 1900 || yearNumber > 2026) {
+        saveMessage.textContent = "Please enter a valid year of birth.";
+        return;
+      }
+
+      student.name = trimmedName;
+      student.house = trimmedHouse;
+      student.yearOfBirth = yearNumber;
 
       savedStudents = savedStudents.map((item) => {
         if (item.name === oldName) {
@@ -204,6 +217,7 @@ function renderStudents(list) {
       localStorage.setItem("savedStudents", JSON.stringify(savedStudents));
       localStorage.setItem("customStudents", JSON.stringify(customStudents));
 
+      saveMessage.textContent = "";
       applyFiltersAndSort();
       renderSavedStudents();
     });
@@ -220,6 +234,7 @@ function renderStudents(list) {
       localStorage.setItem("savedStudents", JSON.stringify(savedStudents));
       localStorage.setItem("customStudents", JSON.stringify(customStudents));
 
+      saveMessage.textContent = "";
       applyFiltersAndSort();
       renderSavedStudents();
     });
@@ -276,30 +291,64 @@ function filterByHouse(house) {
 addStudentForm.addEventListener("submit", (e) => {
   e.preventDefault();
 
-  const newStudent = {
-    name: nameInput.value.trim(),
-    house: houseInput.value.trim(),
-    yearOfBirth: yearInput.value ? Number(yearInput.value) : null,
-    image: imageInput.value.trim() || defaultImage,
-    alternate_names: [],
-    wand: {
-      wood: wandWoodInput.value.trim(),
-      core: wandCoreInput.value.trim(),
-      length: wandLengthInput.value ? Number(wandLengthInput.value) : "",
-    },
-  };
+  const name = nameInput.value.trim();
+  const house = houseInput.value.trim();
+  const yearOfBirth = Number(yearInput.value);
+  const wandWood = wandWoodInput.value.trim();
+  const wandCore = wandCoreInput.value.trim();
+  const wandLength = Number(wandLengthInput.value);
 
-  if (!newStudent.name || !newStudent.house) {
-    saveMessage.textContent = "Name and house are required.";
+  if (
+    !name ||
+    !house ||
+    !yearInput.value ||
+    !wandWood ||
+    !wandCore ||
+    !wandLengthInput.value
+  ) {
+    saveMessage.textContent =
+      "Please fill in name, house, year of birth and all wand information.";
     return;
   }
+
+  if (isNaN(yearOfBirth) || yearOfBirth < 1900 || yearOfBirth > 2026) {
+    saveMessage.textContent = "Please enter a valid year of birth.";
+    return;
+  }
+
+  if (isNaN(wandLength) || wandLength <= 0) {
+    saveMessage.textContent = "Please enter a valid wand length.";
+    return;
+  }
+
+  const nameExists = students.some(
+    (student) => student.name.toLowerCase() === name.toLowerCase(),
+  );
+
+  if (nameExists) {
+    saveMessage.textContent = "A student with this name already exists.";
+    return;
+  }
+
+  const newStudent = {
+    name: name,
+    house: house,
+    yearOfBirth: yearOfBirth,
+    image: defaultImage,
+    alternate_names: [],
+    wand: {
+      wood: wandWood,
+      core: wandCore,
+      length: wandLength,
+    },
+  };
 
   students.unshift(newStudent);
   customStudents.push(newStudent);
 
   localStorage.setItem("customStudents", JSON.stringify(customStudents));
-  applyFiltersAndSort();
 
-  saveMessage.textContent = "";
+  saveMessage.textContent = "Student added successfully.";
   addStudentForm.reset();
+  applyFiltersAndSort();
 });
